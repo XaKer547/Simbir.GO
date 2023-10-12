@@ -14,5 +14,7 @@
         public double Longitude { get; set; }
         public double? MinutePrice { get; set; }
         public double? DayPrice { get; set; }
+
+        public IReadOnlyCollection<Rent> Rents { get; set; } = new HashSet<Rent>();
     }
 }

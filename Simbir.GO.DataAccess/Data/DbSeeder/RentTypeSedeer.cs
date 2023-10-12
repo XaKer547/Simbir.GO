@@ -4,24 +4,24 @@ namespace Simbir.GO.DataAccess.Data.DbSeeder
 {
     public partial class SimbirGoDbSeeder
     {
-        public async Task SeedRoles()
+        public async Task SeedRentTypes()
         {
-            if (_context.Roles.Any())
+            if (_context.RentTypes.Any())
                 return;
 
-            var roles = new List<Role>()
+            var rentTypes = new List<RentType>()
             {
-                new Role()
+                new RentType()
                 {
-                    Name = "User"
+                    Name = "Minutes"
                 },
-                new Role()
+                new RentType()
                 {
-                    Name = "Admin"
+                    Name = "Day"
                 }
             };
 
-            _context.Roles.AddRange(roles);
+            _context.RentTypes.AddRange(rentTypes);
 
             await _context.SaveChangesAsync();
         }

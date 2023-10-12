@@ -12,8 +12,9 @@
         {
             await SeedRoles();
 
+            await SeedRentTypes();
 
-
+            await SeedTransportTypes();
         }
     }
 }

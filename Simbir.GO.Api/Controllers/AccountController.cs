@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Simbir.GO.Domain.Models;
+using Simbir.GO.Api.Helpers;
+using Simbir.GO.Domain.Models.Account;
+using Simbir.GO.Domain.Models.User;
 using Simbir.GO.Domain.Services;
-using System.Security.Claims;
 
 namespace Simbir.GO.Api.Controllers
 {
-    //[Authorize]
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize/*(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)*/]
     public class AccountController : ControllerBase
     {
         private readonly IAccountService _accountService;
@@ -17,40 +18,8 @@ namespace Simbir.GO.Api.Controllers
             _accountService = accountService;
         }
 
-        #region User
-        [HttpGet("Me")]
-        public async Task<IActionResult> GetUserData()
-        {
-            return Ok();
-        }
 
-        [HttpPut("Update")]//проверь что будет если ты вырежешь из body какую-то часть и отправишь такой токен
-        public async Task<IActionResult> UpdateUserDataAsync(UpdateUserDataDTO dto)
-        {
-            var userIdClaim = User.Claims.SingleOrDefault(u => u.Value == ClaimTypes.NameIdentifier);
-
-            if (userIdClaim == null)
-                return BadRequest();
-
-            var result = await _accountService.UpdateUserDataAsync(new UpdateUserDTO()
-            {
-                UsertId = int.Parse(userIdClaim.Value),
-                Username = dto.Username,
-                Password = dto.Password,
-            });
-
-            if (!result)
-                return StatusCode(StatusCodes.Status409Conflict, "Пользователь с таким username уже существует");
-
-            return Ok();
-        }
-
-        [HttpPost("SignOut")]
-        public async Task<IActionResult> LogoutAsync()
-        {
-            return Ok();
-        }
-
+        #region Anonimous
         [AllowAnonymous]
         [HttpPost("SignIn")]
         public async Task<IActionResult> LoginAsync(SignInDTO dto)
@@ -59,6 +28,7 @@ namespace Simbir.GO.Api.Controllers
 
             return Ok(result);
         }
+
 
         [AllowAnonymous]
         [HttpPost("SignUp")]
@@ -79,6 +49,52 @@ namespace Simbir.GO.Api.Controllers
         }
         #endregion
 
+
+        #region Authorized
+        [HttpPost("SignOut")]
+        public async Task<IActionResult> LogoutAsync()
+        {
+            return Ok();
+        }
+
+
+        [HttpGet("Me")]
+        public async Task<IActionResult> GetUserData()
+        {
+            return Ok();
+        }
+
+
+        [HttpPut("Update")]
+        public async Task<IActionResult> UpdateUserDataAsync(UpdateUserDataDTO dto)
+        {
+            var userId = User.GetId();
+
+            var result = await _accountService.UpdateUserDataAsync(userId, dto);
+
+            if (!result)
+                return StatusCode(StatusCodes.Status409Conflict, "Пользователь с таким username уже существует");
+
+            return Ok();
+        }
+        #endregion
+
+
+        #region Admin
+        [Authorize(Roles = "Admin")]
+        [HttpPut("/api/Admin/[controller]/{id}")]
+        public async Task<IActionResult> UpdateUserDataAsync(UpdateUserDTO dto, int id)
+        {
+            var result = await _accountService.UpdateUserDataAsync(id, dto);
+
+            if (!result)
+                return StatusCode(StatusCodes.Status409Conflict, "Пользователь с таким username уже существует");
+
+            return Ok();
+        }
+
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("/api/Admin/[controller]")]
         public async Task<IActionResult> GetUserData(int start, int count)
         {
@@ -86,6 +102,8 @@ namespace Simbir.GO.Api.Controllers
             return Ok();
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpGet("/api/Admin/[controller]/{id}")]
         public async Task<IActionResult> GetUserData(int id)
         {
@@ -93,6 +111,8 @@ namespace Simbir.GO.Api.Controllers
             return Ok();
         }
 
+
+        [Authorize(Roles = "Admin")]
         [HttpPost("/api/Admin/[controller]")]
         public async Task<IActionResult> CreateAccountAsync(CreateUserDTO dto)
         {
@@ -104,22 +124,8 @@ namespace Simbir.GO.Api.Controllers
             return Ok();
         }
 
-        [HttpPut("/api/Admin/[controller]/{id}")]//тут должна быть совершенно другая DTO
-        public async Task<IActionResult> UpdateUserDataAsync(UpdateUserDataDTO dto, int id)
-        {
-            var result = await _accountService.UpdateUserDataAsync(new UpdateUserDTO()
-            {
-                UsertId = id,
-                Username = dto.Username,
-                Password = dto.Password,
-            });
 
-            if (!result)
-                return StatusCode(StatusCodes.Status409Conflict, "Пользователь с таким username уже существует");
-
-            return Ok();
-        }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("/api/Admin/[controller]/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -127,5 +133,6 @@ namespace Simbir.GO.Api.Controllers
 
             return Ok();
         }
+        #endregion
     }
 }
