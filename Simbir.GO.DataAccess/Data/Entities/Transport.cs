@@ -2,7 +2,7 @@
 {
     public class Transport
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public User Owner { get; set; }
         public TransportType TransportType { get; set; }
         public bool CanBeRented { get; set; }

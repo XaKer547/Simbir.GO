@@ -4,7 +4,7 @@ namespace Simbir.GO.DataAccess.Data.DbSeeder
 {
     public partial class SimbirGoDbSeeder
     {
-        public async Task SeedRentTypes()
+        public async Task SeedRentTypesAsync()
         {
             if (_context.RentTypes.Any())
                 return;

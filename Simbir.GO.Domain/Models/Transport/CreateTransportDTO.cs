@@ -7,7 +7,7 @@
             (TransportType, CanBeRented, Model, Color, Identifier, Description, Latitude, Longitude, MinutePrice, DayPrice) = transportDto;
         }
 
-        public int OwnerId { get; init; }
+        public long OwnerId { get; init; }
         public string TransportType { get; init; }
         public bool CanBeRented { get; init; }
         public string Model { get; init; }

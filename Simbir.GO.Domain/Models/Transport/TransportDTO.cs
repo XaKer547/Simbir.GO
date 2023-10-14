@@ -2,6 +2,7 @@
 {
     public record TransportDTO
     {
+        public long Id { get; init; }
         public string TransportType { get; init; }
         public bool CanBeRented { get; init; }
         public string Model { get; init; }

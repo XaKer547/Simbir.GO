@@ -4,7 +4,7 @@ namespace Simbir.GO.DataAccess.Data.DbSeeder
 {
     public partial class SimbirGoDbSeeder
     {
-        public async Task SeedRoles()
+        public async Task SeedRolesAsync()
         {
             if (_context.Roles.Any())
                 return;

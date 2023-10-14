@@ -3,13 +3,30 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Simbir.GO.Api.Infrastructure;
+using Simbir.GO.Application.Services;
 using Simbir.GO.DataAccess.Data;
 using Simbir.GO.DataAccess.Data.DbSeeder;
 using Simbir.GO.Domain.Services;
 using System.Text;
 using System.Text.Json.Serialization;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder();
+
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateLifetime = true,
+            ValidateAudience = false,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfiguration:Key"]))
+        };
+    });
 
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
@@ -26,48 +43,41 @@ builder.Services.AddSwaggerGen(c =>
         Title = "Simbir.Go API",
         Version = "v1"
     });
-    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
     {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Вставьте свой JWT-токен сюда",
-        Name = "Авторизация",
-        Type = SecuritySchemeType.ApiKey
+        Description = "JSON Web Token based security",
     });
     c.AddSecurityRequirement(new OpenApiSecurityRequirement {
-   {
-     new OpenApiSecurityScheme
-     {
-       Reference = new OpenApiReference
-       {
-         Type = ReferenceType.SecurityScheme,
-         Id = "Bearer"
-       }
-      },
-      new string[] { }
-    }
-  });
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
-
-builder.Services.AddScoped<IJwtManager, JwtManager>();
 
 builder.Services.AddDbContext<SimbirGoDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("SimbirGoDbConnection"));
 });
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.RequireHttpsMetadata = false;
-
-        options.TokenValidationParameters = new TokenValidationParameters()
-        {
-            ValidateLifetime = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfiguration:Key"]))
-        };
-    });
+builder.Services.AddScoped<IJwtManager, JwtManager>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 builder.Services.AddAuthorization();
+
 
 var app = builder.Build();
 
@@ -92,6 +102,5 @@ using (var scope = app.Services.CreateScope())
 
     await seeder.SeedAsync();
 }
-
 
 app.Run();

@@ -13,7 +13,6 @@ namespace Simbir.GO.Api.Controllers
     public class TransportController : ControllerBase
     {
         private readonly ITransportService _transportService;
-        private readonly ITransportManager _transportManager;
         public TransportController(ITransportService transportService)
         {
             _transportService = transportService;
@@ -64,7 +63,7 @@ namespace Simbir.GO.Api.Controllers
 
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMyTransport(int id)
+        public async Task<IActionResult> DeleteMyTransport(long id)
         {
             var userId = User.GetId();
 
@@ -90,7 +89,7 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("/api/Admin/Transport/{id}")]
-        public async Task<IActionResult> GetTransportInfo(int id)
+        public async Task<IActionResult> GetTransportInfo(long id)
         {
             var transport = await _transportService.GetTransportByIdAsync(id);
 
@@ -110,7 +109,7 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("/api/Admin/Transport/{id}")]
-        public async Task<IActionResult> UpdateTransport(int id, TransportDTO dto)
+        public async Task<IActionResult> UpdateTransport(long id, TransportDTO dto)
         {
             await _transportService.UpdateTransportAsync(new UpdateTransportDTO(dto.Destruct())
             {
@@ -123,7 +122,7 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpDelete("/api/Admin/Transport/{id}")]
-        public async Task<IActionResult> DeleteTransport(int id)
+        public async Task<IActionResult> DeleteTransport(long id)
         {
             await _transportService.DeleteTransportByIdAsync(id);
 

@@ -17,7 +17,7 @@ namespace Simbir.GO.Api.Infrastructure
             _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
         }
 
-        public async Task<string> CreateToken(int userId, string role)
+        public async Task<string> CreateToken(long userId, string role)
         {
             var claims = new List<Claim>()
             {

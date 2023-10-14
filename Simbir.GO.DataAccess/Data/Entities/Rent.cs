@@ -2,12 +2,15 @@
 {
     public class Rent
     {
-        public int Id { get; set; }
-        public RentType RentType { get; set; }
+        public long Id { get; set; }
         public Transport Transport { get; set; }
         public User User { get; set; }
-        public bool IsFinished { get; set; }
-        public DateTime Start { get; set; }
-        public DateTime End { get; set; }
+
+        public DateTime TimeStart { get; set; }
+        public DateTime? TimeEnd { get; set; }
+
+        public double PriceOfUnit { get; set; }
+        public RentType RentType { get; set; }
+        public double FinalPrice { get; set; } = 0;
     }
 }

@@ -4,12 +4,11 @@ namespace Simbir.GO.Api.Helpers
 {
     public static class UserClaimsHelper
     {
-        public static int GetId(this ClaimsPrincipal user)
+        public static long GetId(this ClaimsPrincipal user)
         {
             var claim = user.Claims.Single(c => c.Type == ClaimTypes.NameIdentifier);
 
-            return int.Parse(claim.Value);
+            return long.Parse(claim.Value);
         }
-
     }
 }

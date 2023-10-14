@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Simbir.GO.Api.Helpers;
 using Simbir.GO.Domain.Services;
 
 namespace Simbir.GO.Api.Controllers
@@ -9,37 +10,38 @@ namespace Simbir.GO.Api.Controllers
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
     {
-        private readonly IAccountService _accountService;
-        public PaymentController(IAccountService accountService)
+        private readonly IPaymentService _paymentService;
+        public PaymentController(IPaymentService paymentService)
         {
-            _accountService = accountService;
+            _paymentService = paymentService;
         }
-
 
         [Authorize(Roles = "Admin")]
         [HttpPost("/api/[controller]/Admin/Hesoyam")]
         public async Task<IActionResult> IncreaseEveryonesBalance()
         {
-            await _accountService.IncreaseBalance();
-            return Ok("cheat activated");
+            await _paymentService.IncreaseBalance();
+            return Ok();
         }
 
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("Hesoyam/{accountId}")]
+        [HttpPost("/api/[controller]/Admin/Hesoyam/{accountId}")]
         public async Task<IActionResult> IncreaseBalance(int accountId)
         {
-            await _accountService.IncreaseBalance(accountId);
+            await _paymentService.IncreaseBalance(accountId);
 
-            return Ok("cheat activated");
+            return Ok();
         }
 
         [HttpPost("Hesoyam")]
         public async Task<IActionResult> IncreaseBalance()
         {
-            // await _accountService.IncreaseBalance(1);
+            var userId = User.GetId();
 
-            return Ok("cheat activated");
+            await _paymentService.IncreaseBalance(userId);
+
+            return Ok();
         }
     }
 }

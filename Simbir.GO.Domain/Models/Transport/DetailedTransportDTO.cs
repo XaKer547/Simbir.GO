@@ -1,13 +1,9 @@
 ﻿namespace Simbir.GO.Domain.Models.Transport
 {
-    public record UpdateTransportDTO
+    public record DetailedTransportDTO
     {
-        public UpdateTransportDTO((string transportType, bool canBeRented, string model, string color, string identifier, string? description, double latitude, double longtitude, double? minutePrice, double? dayPrice) transportDto)
-        {
-            (TransportType, CanBeRented, Model, Color, Identifier, Description, Latitude, Longitude, MinutePrice, DayPrice) = transportDto;
-        }
-
-        public long TransportId { get; init; }
+        public long Id { get; init; }
+        public long OwnerId { get; init; }
         public string TransportType { get; init; }
         public bool CanBeRented { get; init; }
         public string Model { get; init; }

@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Simbir.GO.Domain\Simbir.GO.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="wwwroot\Assets\" />
-  </ItemGroup>
-
 </Project>

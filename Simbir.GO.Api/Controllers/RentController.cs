@@ -18,7 +18,7 @@ namespace Simbir.GO.Api.Controllers
 
         [AllowAnonymous]
         [HttpGet("Transport")]
-        public async Task<IActionResult> GetAvaibleTransport(double lat, double @long, double radius, string type)
+        public async Task<IActionResult> GetAvaibleTransport(double lat, double @long, double radius, RentTypes type)
         {
 
             return Ok();

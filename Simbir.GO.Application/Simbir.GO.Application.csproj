@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Simbir.GO.DataAccess\Simbir.GO.DataAccess.csproj" />
     <ProjectReference Include="..\Simbir.GO.Domain\Simbir.GO.Domain.csproj" />
   </ItemGroup>

@@ -2,6 +2,6 @@
 {
     public interface IJwtManager
     {
-        Task<string> CreateToken(int userId, string role);
+        Task<string> CreateToken(long userId, string role);
     }
 }

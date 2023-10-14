@@ -10,11 +10,13 @@
 
         public async Task SeedAsync()
         {
-            await SeedRoles();
+            await SeedRolesAsync();
 
-            await SeedRentTypes();
+            await SeedRentTypesAsync();
 
-            await SeedTransportTypes();
+            await SeedTransportTypesAsync();
+
+            await SeedUsersAsync();
         }
     }
 }

@@ -4,10 +4,10 @@ namespace Simbir.GO.Domain.Services
 {
     public interface ITransportService
     {
-        Task<TransportDTO> GetTransportByIdAsync(int id);
+        Task<TransportDTO> GetTransportByIdAsync(long id);
         Task<IReadOnlyCollection<TransportDTO>> GetTransports();
-        Task DeleteTransportByIdAsync(int id);
-        Task<bool> IsTransportOwner(int userId, int transportId);
+        Task DeleteTransportByIdAsync(long id);
+        Task<bool> IsTransportOwner(long userId, long transportId);
         Task CreateTransportAsync(CreateTransportDTO dto);
         Task UpdateTransportAsync(UpdateTransportDTO dto);
     }

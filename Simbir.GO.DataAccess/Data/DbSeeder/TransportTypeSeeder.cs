@@ -4,7 +4,7 @@ namespace Simbir.GO.DataAccess.Data.DbSeeder
 {
     public partial class SimbirGoDbSeeder
     {
-        public async Task SeedTransportTypes()
+        public async Task SeedTransportTypesAsync()
         {
             if (_context.TransportTypes.Any())
                 return;
