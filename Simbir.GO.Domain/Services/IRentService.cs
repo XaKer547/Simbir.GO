@@ -4,14 +4,19 @@ namespace Simbir.GO.Domain.Services
 {
     public interface IRentService
     {
-        Task<IReadOnlyCollection<RentDTO>> GetUserRentHistory(int userId);
-        Task<IReadOnlyCollection<RentDTO>> GetTrasnportRentHistory(int transportId);
-        Task<bool> IsTenant(int userId, int rentId);
+        Task<RentDTO> GetRentAsync(long id);
+        Task<IReadOnlyCollection<RentDTO>> GetUserRentHistoryAsync(long userId);
 
-        Task CreateRent(CreateRentDTO dto);
+        Task<IReadOnlyCollection<RentDTO>> GetTrasnportRentHistoryAsync(long transportId);
 
-        Task StartRent(StartRentDTO dto);
+        Task<bool> IsTenantAsync(long userId, long rentId);
 
-        Task EndRent();
+        Task CreateRentAsync(CreateRentDTO dto);
+
+        Task StartRentAsync(StartRentDTO dto);
+
+        Task EndRentAsync(EndRentDTO dto);
+
+        Task DeleteRentAsync(long rentId);
     }
 }

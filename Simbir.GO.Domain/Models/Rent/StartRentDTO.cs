@@ -4,9 +4,8 @@ namespace Simbir.GO.Domain.Models.Rent
 {
     public record StartRentDTO
     {
-        public int TransportId { get; init; }
-        public int UserId { get; init; }
+        public long UserId { get; init; }
+        public long TransportId { get; init; }
         public RentTypes RentType { get; init; }
-        public DateTime StartTime { get; init; }
     }
 }

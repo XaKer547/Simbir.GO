@@ -10,5 +10,6 @@ namespace Simbir.GO.Domain.Services
         Task<bool> IsTransportOwner(long userId, long transportId);
         Task CreateTransportAsync(CreateTransportDTO dto);
         Task UpdateTransportAsync(UpdateTransportDTO dto);
+        Task UpdateTransportGeoAsync(UpdateTransportGeoDTO dto);
     }
 }

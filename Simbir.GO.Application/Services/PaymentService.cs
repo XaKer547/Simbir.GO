@@ -7,7 +7,6 @@ namespace Simbir.GO.Application.Services
     {
         private readonly SimbirGoDbContext _context;
         private const double MONEY_INCREASE = 250000;
-
         public PaymentService(SimbirGoDbContext context)
         {
             _context = context;
@@ -30,6 +29,9 @@ namespace Simbir.GO.Application.Services
         public async Task IncreaseBalance(long userId)
         {
             var user = _context.Users.SingleOrDefault(u => u.Id == userId);
+
+            if (user is null)
+                return;
 
             user.Balance += MONEY_INCREASE;
 

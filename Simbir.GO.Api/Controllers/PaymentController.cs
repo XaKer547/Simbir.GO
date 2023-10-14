@@ -10,11 +10,14 @@ namespace Simbir.GO.Api.Controllers
     [Route("api/[controller]")]
     public class PaymentController : ControllerBase
     {
+        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IPaymentService _paymentService;
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService, IWebHostEnvironment webHostEnvironment)
         {
             _paymentService = paymentService;
+            _webHostEnvironment = webHostEnvironment;
         }
+
 
         [Authorize(Roles = "Admin")]
         [HttpPost("/api/[controller]/Admin/Hesoyam")]
@@ -31,8 +34,12 @@ namespace Simbir.GO.Api.Controllers
         {
             await _paymentService.IncreaseBalance(accountId);
 
-            return Ok();
+            return Ok(new
+            {
+                AudioLink = Path.Combine(_webHostEnvironment.WebRootPath, "Assets", "cheat_activated.mp3")
+            });
         }
+
 
         [HttpPost("Hesoyam")]
         public async Task<IActionResult> IncreaseBalance()

@@ -33,15 +33,13 @@ namespace Simbir.GO.Application.Services
 
         public async Task CreateUserAsync(CreateUserDTO signUp)
         {
-            var user = new User()
+            _context.Users.Add(new User()
             {
                 Username = signUp.Username,
                 Password = signUp.Password,
                 Balance = signUp.Balance,
                 Role = FindRoleByName(signUp.Role),
-            };
-
-            _context.Users.Add(user);
+            });
 
             await _context.SaveChangesAsync();
         }
@@ -51,6 +49,9 @@ namespace Simbir.GO.Application.Services
         {
             var user = _context.Users.SingleOrDefault(u => u.Id == userId);
 
+            if (user is null)
+                return;
+
             _context.Users.Remove(user);
 
             await _context.SaveChangesAsync();
@@ -59,12 +60,7 @@ namespace Simbir.GO.Application.Services
 
         public async Task<bool> IsUsernameExistsAsync(string username)
         {
-            var usernameCheck = await _context.Users.AnyAsync(u => u.Username == username);
-
-            if (usernameCheck)
-                return true;
-
-            return false;
+            return await _context.Users.AnyAsync(u => u.Username == username);
         }
 
 
@@ -82,9 +78,9 @@ namespace Simbir.GO.Application.Services
         }
 
 
-        public Task<UserDetailsDTO> GetUserAsync(long userId)
+        public async Task<UserDetailsDTO> GetUserAsync(long userId)
         {
-            var user = _context.Users.Select(u => new UserDetailsDTO
+            return await _context.Users.Select(u => new UserDetailsDTO
             {
                 Id = u.Id,
                 Role = u.Role.Name,
@@ -93,14 +89,12 @@ namespace Simbir.GO.Application.Services
                 Balance = u.Balance,
                 Transports = u.Transports.Select(t => t.Id).ToArray(),
             }).SingleOrDefaultAsync(u => u.Id == userId);
-
-            return user;
         }
 
 
         public async Task<IReadOnlyCollection<UserDetailsDTO>> GetUsersAsync(int start, int count)
         {
-            var users = await _context.Users.Select(u => new UserDetailsDTO
+            return await _context.Users.Select(u => new UserDetailsDTO
             {
                 Id = u.Id,
                 Role = u.Role.Name,
@@ -111,8 +105,6 @@ namespace Simbir.GO.Application.Services
             }).Skip(start)
             .Take(count)
             .ToArrayAsync();
-
-            return users;
         }
 
 
