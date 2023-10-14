@@ -22,6 +22,6 @@ namespace Simbir.GO.DataAccess.Data.Entities
         public DateTime? TimeEnd { get; set; }
 
         public double PriceOfUnit { get; set; }
-        public double FinalPrice { get; set; } = 0;
+        public double FinalPrice { get; set; } = 0; //сделай вычисляемым
     }
 }

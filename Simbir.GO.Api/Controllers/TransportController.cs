@@ -48,7 +48,7 @@ namespace Simbir.GO.Api.Controllers
         {
             var userId = User.GetId();
 
-            var result = await _transportService.IsTransportOwner(userId, id);
+            var result = await _transportService.IsTransportOwnerAsync(userId, id);
 
             if (!result)
                 return BadRequest();
@@ -67,12 +67,12 @@ namespace Simbir.GO.Api.Controllers
         {
             var userId = User.GetId();
 
-            var result = await _transportService.IsTransportOwner(userId, id);
+            var result = await _transportService.IsTransportOwnerAsync(userId, id);
 
             if (!result)
                 return BadRequest();
 
-            await _transportService.DeleteTransportByIdAsync(id);
+            await _transportService.DeleteTransportAsync(id);
 
             return Ok();
         }
@@ -124,7 +124,7 @@ namespace Simbir.GO.Api.Controllers
         [HttpDelete("/api/Admin/Transport/{id}")]
         public async Task<IActionResult> DeleteTransport(long id)
         {
-            await _transportService.DeleteTransportByIdAsync(id);
+            await _transportService.DeleteTransportAsync(id);
 
             return Ok();
         }

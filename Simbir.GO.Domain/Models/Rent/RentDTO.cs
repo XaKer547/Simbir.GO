@@ -2,6 +2,7 @@
 {
     public record RentDTO
     {
+        public long Id { get; init; }
         public long TransportId { get; init; }
         public long UserId { get; init; }
         public string TimeStart { get; init; }

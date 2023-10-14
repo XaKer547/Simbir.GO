@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Simbir.GO.Application.Exceptions;
 using Simbir.GO.DataAccess.Data;
 using Simbir.GO.DataAccess.Data.Entities;
 using Simbir.GO.Domain.Models.Transport;
@@ -32,6 +33,9 @@ namespace Simbir.GO.Application.Services
 
             var user = _context.Users.SingleOrDefault(u => u.Id == dto.OwnerId);
 
+            if (user is null)
+                throw new EntityNotFoundException(nameof(User));
+
             user.Transports.Add(transport);
 
             _context.Users.Update(user);
@@ -39,16 +43,17 @@ namespace Simbir.GO.Application.Services
             await _context.SaveChangesAsync();
         }
 
-
-        public async Task DeleteTransportByIdAsync(long id)
+        public async Task DeleteTransportAsync(long id)
         {
             var transport = _context.Transports.SingleOrDefault(t => t.Id == id);
+
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
 
             _context.Transports.Remove(transport);
 
             await _context.SaveChangesAsync();
         }
-
 
         public async Task<TransportDTO> GetTransportByIdAsync(long id)
         {
@@ -67,24 +72,53 @@ namespace Simbir.GO.Application.Services
                 TransportType = t.TransportType.Name,
             }).SingleOrDefaultAsync(t => t.Id == id);
 
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
+
             return transport;
         }
 
-        public Task<IReadOnlyCollection<TransportDTO>> GetTransports()
+        public Task<IReadOnlyCollection<TransportDTO>> GetTransportsAsync()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> IsTransportOwner(long userId, long transportId)
+        public async Task<IReadOnlyCollection<TransportDTO>> GetTransportsAsync(TransportFilterDTO dto)
         {
-            var transport = await _context.Transports.SingleOrDefaultAsync(t => t.Id == transportId && t.Owner.Id == userId);
+            var maxLat = dto.Latitude + dto.Radius;
+            var minLat = dto.Longitude - dto.Radius;
 
-            return transport != null;
+            var maxLong = dto.Longitude + dto.Radius;
+            var minLong = dto.Longitude - dto.Radius;
+
+            return await _context.Transports.Where(t => t.Latitude >= minLat && t.Latitude <= maxLat && t.Longitude >= minLong && t.Longitude <= maxLong)
+                  .Select(t => new TransportDTO
+                  {
+                      Id = t.Id,
+                      CanBeRented = t.CanBeRented,
+                      Color = t.Color,
+                      DayPrice = t.DayPrice,
+                      Description = t.Description,
+                      Identifier = t.Identifier,
+                      Latitude = t.Latitude,
+                      Longitude = t.Longitude,
+                      MinutePrice = t.MinutePrice,
+                      Model = t.Model,
+                      TransportType = t.TransportType.Name,
+                  }).ToArrayAsync();
+        }
+
+        public async Task<bool> IsTransportOwnerAsync(long userId, long transportId)
+        {
+            return await _context.Transports.AnyAsync(t => t.Id == transportId && t.Owner.Id == userId);
         }
 
         public async Task UpdateTransportAsync(UpdateTransportDTO dto)
         {
             var transport = _context.Transports.SingleOrDefault(t => t.Id == dto.TransportId);
+
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
 
             transport.TransportType = FindTransportTypeByName(dto.TransportType);
             transport.DayPrice = dto.DayPrice;
@@ -94,6 +128,21 @@ namespace Simbir.GO.Application.Services
             transport.Model = dto.Model;
             transport.Color = dto.Color;
             transport.Description = dto.Description;
+            transport.Latitude = dto.Latitude;
+            transport.Longitude = dto.Longitude;
+
+            _context.Transports.Update(transport);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task UpdateTransportGeoAsync(UpdateTransportGeoDTO dto)
+        {
+            var transport = _context.Transports.SingleOrDefault(t => t.Id == dto.TrasnportId);
+
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
+
             transport.Latitude = dto.Latitude;
             transport.Longitude = dto.Longitude;
 

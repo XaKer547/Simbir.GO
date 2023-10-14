@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Simbir.GO.Api.Helpers;
 using Simbir.GO.Application.Exceptions;
+using Simbir.GO.DataAccess.Data.Entities;
 using Simbir.GO.Domain.Models.Enums;
+using Simbir.GO.Domain.Models.Rent;
 using Simbir.GO.Domain.Services;
 
 namespace Simbir.GO.Api.Controllers
@@ -23,26 +25,42 @@ namespace Simbir.GO.Api.Controllers
         [HttpGet("Transport")]
         public async Task<IActionResult> GetAvaibleTransport(double lat, double @long, double radius, RentTypes type)
         {
+            var transports = await _transportService.GetTransportsAsync(new Domain.Models.Transport.TransportFilterDTO()
+            {
+                Latitude = lat,
+                Longitude = @long,
+                Radius = radius,
+                RentType = type
+            });
 
-            return Ok();
+            return Ok(transports);
         }
 
+
         [HttpGet("{rentId}")]
-        public async Task<IActionResult> GetMyRentInfo(long rentId)
+        public async Task<IActionResult> GetRentInfo(long rentId)
         {
             var userId = User.GetId();
 
-            //блять
-            var isOwner = await _transportService.IsTransportOwner(userId);
-
             var isTenant = await _rentService.IsTenantAsync(userId, rentId);
 
-            if (!isOwner && isTenant)
+            try
+            {
+                var transportId = await _rentService.GetTransportByRentIdAsync(rentId);
+
+                var isOwner = await _transportService.IsTransportOwnerAsync(userId, transportId);
+
+                if (!isOwner && !isTenant)
+                    return BadRequest();
+
+                var rent = await _rentService.GetRentAsync(rentId);
+
+                return Ok(rent);
+            }
+            catch (EntityNotFoundException)
+            {
                 return BadRequest();
-
-            var rent = await _rentService.GetRentAsync(rentId);
-
-            return Ok(rent);
+            }
         }
 
 
@@ -62,7 +80,7 @@ namespace Simbir.GO.Api.Controllers
         {
             var userId = User.GetId();
 
-            var isOwner = await _transportService.IsTransportOwner(userId, transportId);
+            var isOwner = await _transportService.IsTransportOwnerAsync(userId, transportId);
 
             if (!isOwner)
                 return BadRequest();
@@ -74,21 +92,28 @@ namespace Simbir.GO.Api.Controllers
 
 
         [HttpPost("New/{transportId}")]
-        public async Task<IActionResult> StartTransportRent(long transportId , RentTypes rentType)
+        public async Task<IActionResult> StartTransportRent(long transportId, RentTypes rentType)
         {
             var userId = User.GetId();
 
-            var isOwner = await _transportService.IsTransportOwner(userId, transportId);
+            var isOwner = await _transportService.IsTransportOwnerAsync(userId, transportId);
 
             if (isOwner)
                 return BadRequest();
 
-            await _rentService.StartRentAsync(new Domain.Models.Rent.StartRentDTO()
+            try
             {
-                UserId = userId,
-                RentType = rentType,
-                TransportId = transportId,
-            });
+                await _rentService.StartRentAsync(new StartRentDTO()
+                {
+                    UserId = userId,
+                    RentType = rentType,
+                    TransportId = transportId,
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
 
             return Ok();
         }
@@ -104,12 +129,19 @@ namespace Simbir.GO.Api.Controllers
             if (!isTenant)
                 return BadRequest();
 
-            await _rentService.EndRentAsync(new Domain.Models.Rent.EndRentDTO()
+            try
             {
-                RentId = rentId,
-                Latitude = lat,
-                Longitude = @long,
-            });
+                await _rentService.EndRentAsync(new EndRentDTO()
+                {
+                    RentId = rentId,
+                    Latitude = lat,
+                    Longitude = @long,
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
 
             return Ok();
         }
@@ -117,11 +149,18 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet("/api/Admin/[controller]/{rentId}")]
-        public async Task<IActionResult> GetRentInfo(long rentId)
+        public async Task<IActionResult> GetRent(long rentId)
         {
-            var rent = await _rentService.GetRentAsync(rentId);
+            try
+            {
+                var rent = await _rentService.GetRentAsync(rentId);
 
-            return Ok(rent);
+                return Ok(rent);
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
         }
 
 
@@ -129,9 +168,16 @@ namespace Simbir.GO.Api.Controllers
         [HttpGet("/api/Admin/UserHistory/{userId}")]
         public async Task<IActionResult> GetUserRentHistory(long userId)
         {
-            var history = await _rentService.GetUserRentHistoryAsync(userId);
+            try
+            {
+                var history = await _rentService.GetUserRentHistoryAsync(userId);
 
-            return Ok(history);
+                return Ok(history);
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
         }
 
 
@@ -149,8 +195,16 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("/api/Admin/[controller]")]
-        public async Task<IActionResult> StartTransportRent() // DTO
+        public async Task<IActionResult> CreateTransportRent(CreateRentDTO dto)
         {
+            try
+            {
+                await _rentService.CreateRentAsync(dto);
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
 
             return Ok();
         }
@@ -158,12 +212,21 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("/api/Admin/[controller]/End/{rentId}")]
-        public async Task<IActionResult> EndTransportRent(long rentId) // DTO
+        public async Task<IActionResult> EndRent(long rentId, double lat, double @long)
         {
-            await _rentService.EndRentAsync(new Domain.Models.Rent.EndRentDTO()
+            try
             {
-
-            });
+                await _rentService.EndRentAsync(new EndRentDTO()
+                {
+                    RentId = rentId,
+                    Latitude = lat,
+                    Longitude = @long,
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
 
             return Ok();
         }
@@ -171,8 +234,26 @@ namespace Simbir.GO.Api.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("/api/Admin/[controller]/{id}")]
-        public async Task<IActionResult> ChangeRentInfo(long id)
+        public async Task<IActionResult> ChangeRentInfo(long id, RentDTO dto)
         {
+            try
+            {
+                await _rentService.UpdateRentAsync(new UpdateRentDTO()
+                {
+                    RentId = id,
+                    UserId = dto.UserId,
+                    TransportId = dto.TransportId,
+                    TimeEnd = dto.TimeEnd,
+                    TimeStart = dto.TimeStart,
+                    FinalPrice = dto.FinalPrice,
+                    PriceOfUnit = dto.PriceOfUnit,
+                    PriceType = dto.PriceType,
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return BadRequest();
+            }
 
             return Ok();
         }

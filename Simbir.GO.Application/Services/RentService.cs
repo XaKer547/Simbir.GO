@@ -37,42 +37,34 @@ namespace Simbir.GO.Application.Services
 
         public async Task<IReadOnlyCollection<RentDTO>> GetTrasnportRentHistoryAsync(long transportId)
         {
-            var transport = await _context.Transports.Include(t => t.Rents)
-                .SingleOrDefaultAsync(t => t.Id == transportId);
-
-            if (transport is null)
-                throw new EntityNotFoundException(nameof(Transport));
-
-            return transport.Rents.Select(r => new RentDTO
-            {
-                UserId = r.User.Id,
-                TransportId = r.Transport.Id,
-                TimeStart = r.TimeStart.ToString(),
-                PriceType = r.RentType.Name,
-                FinalPrice = r.FinalPrice,
-                PriceOfUnit = r.PriceOfUnit,
-                TimeEnd = r.TimeEnd.ToString(),
-            }).ToArray();
+            return await _context.Rents.Where(r => r.TransportId == transportId)
+                .Select(r => new RentDTO
+                {
+                    Id = r.Id,
+                    UserId = r.User.Id,
+                    TransportId = r.Transport.Id,
+                    TimeStart = r.TimeStart.ToString(),
+                    PriceType = r.RentType.Name,
+                    FinalPrice = r.FinalPrice,
+                    PriceOfUnit = r.PriceOfUnit,
+                    TimeEnd = r.TimeEnd.ToString(),
+                }).ToArrayAsync();
         }
 
         public async Task<IReadOnlyCollection<RentDTO>> GetUserRentHistoryAsync(long userId)
         {
-            var user = await _context.Users.Include(u => u.Rents)
-                .SingleOrDefaultAsync(u => u.Id == userId);
-
-            if (user is null)
-                throw new EntityNotFoundException(nameof(User));
-
-            return user.Rents.Select(r => new RentDTO
-            {
-                UserId = r.User.Id,
-                TransportId = r.Transport.Id,
-                TimeStart = r.TimeStart.ToString(),
-                PriceType = r.RentType.Name,
-                FinalPrice = r.FinalPrice,
-                PriceOfUnit = r.PriceOfUnit,
-                TimeEnd = r.TimeEnd.ToString(),
-            }).ToArray();
+            return await _context.Rents.Where(r => r.UserId == userId)
+                .Select(r => new RentDTO
+                {
+                    Id = r.Id,
+                    UserId = r.User.Id,
+                    TransportId = r.Transport.Id,
+                    TimeStart = r.TimeStart.ToString(),
+                    PriceType = r.RentType.Name,
+                    FinalPrice = r.FinalPrice,
+                    PriceOfUnit = r.PriceOfUnit,
+                    TimeEnd = r.TimeEnd.ToString(),
+                }).ToArrayAsync();
         }
 
         public async Task<bool> IsTenantAsync(long userId, long rentId)
@@ -156,6 +148,34 @@ namespace Simbir.GO.Application.Services
                 throw new EntityNotFoundException(nameof(Rent));
 
             _context.Rents.Remove(rent);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<long> GetTransportByRentIdAsync(long rentId)
+        {
+            var transport = await _transportService.GetTransportByIdAsync(rentId);
+
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
+
+            return transport.Id;
+        }
+
+        public async Task UpdateRentAsync(UpdateRentDTO dto)
+        {
+            var rent = _context.Rents.SingleOrDefault(r => r.Id == dto.RentId);
+
+            if (rent is null)
+                throw new EntityNotFoundException(nameof(Rent));
+
+            rent.UserId = dto.UserId;
+            rent.TransportId = dto.TransportId;
+            rent.TimeStart = DateTime.Parse(dto.TimeStart);
+            rent.TimeEnd = DateTime.Parse(dto.TimeEnd);
+            rent.PriceOfUnit = dto.PriceOfUnit;
+
+            _context.Rents.Update(rent);
 
             await _context.SaveChangesAsync();
         }
