@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Simbir.GO.Api.Helpers;
+using Simbir.GO.Application.Exceptions;
 using Simbir.GO.Domain.Models.Enums;
 using Simbir.GO.Domain.Models.Transport;
 using Simbir.GO.Domain.Services;
@@ -23,9 +24,15 @@ namespace Simbir.GO.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTransportShortInfo(int id)
         {
-            var transport = await _transportService.GetTransportByIdAsync(id);
-
-            return Ok(transport);
+            try
+            {
+                var transport = await _transportService.GetTransportByIdAsync(id);
+                return Ok(transport);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
 
@@ -34,10 +41,17 @@ namespace Simbir.GO.Api.Controllers
         {
             var userrId = User.GetId();
 
-            await _transportService.CreateTransportAsync(new CreateTransportDTO(dto.Destruct())
+            try
             {
-                OwnerId = userrId
-            });
+                await _transportService.CreateTransportAsync(new CreateTransportDTO(dto.Destruct())
+                {
+                    OwnerId = userrId
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -53,10 +67,17 @@ namespace Simbir.GO.Api.Controllers
             if (!result)
                 return BadRequest();
 
-            await _transportService.UpdateTransportAsync(new UpdateTransportDTO(dto.Destruct())
+            try
             {
-                TransportId = id
-            });
+                await _transportService.UpdateTransportAsync(new UpdateTransportDTO(dto.Destruct())
+                {
+                    TransportId = id
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -72,7 +93,14 @@ namespace Simbir.GO.Api.Controllers
             if (!result)
                 return BadRequest();
 
-            await _transportService.DeleteTransportAsync(id);
+            try
+            {
+                await _transportService.DeleteTransportAsync(id);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -82,8 +110,14 @@ namespace Simbir.GO.Api.Controllers
         [HttpGet("/api/Admin/Transport")]
         public async Task<IActionResult> GetTransport(int start, int count, TransportTypes transportType)
         {
+            var transports = await _transportService.GetTransportsAsync(new TransportPaginationDTO()
+            {
+                Start = start,
+                Count = count,
+                TransportType = transportType
+            });
 
-            return Ok();
+            return Ok(transports);
         }
 
 
@@ -91,9 +125,16 @@ namespace Simbir.GO.Api.Controllers
         [HttpGet("/api/Admin/Transport/{id}")]
         public async Task<IActionResult> GetTransportInfo(long id)
         {
-            var transport = await _transportService.GetTransportByIdAsync(id);
+            try
+            {
+                var transport = await _transportService.GetTransportByIdAsync(id);
+                return Ok(transport);
 
-            return Ok(transport);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
 
@@ -101,7 +142,14 @@ namespace Simbir.GO.Api.Controllers
         [HttpPost("/api/Admin/Transport")]
         public async Task<IActionResult> CreateTransport(CreateTransportDTO dto)
         {
-            await _transportService.CreateTransportAsync(dto);
+            try
+            {
+                await _transportService.CreateTransportAsync(dto);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -111,10 +159,17 @@ namespace Simbir.GO.Api.Controllers
         [HttpPut("/api/Admin/Transport/{id}")]
         public async Task<IActionResult> UpdateTransport(long id, TransportDTO dto)
         {
-            await _transportService.UpdateTransportAsync(new UpdateTransportDTO(dto.Destruct())
+            try
             {
-                TransportId = id,
-            });
+                await _transportService.UpdateTransportAsync(new UpdateTransportDTO(dto.Destruct())
+                {
+                    TransportId = id,
+                });
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }
@@ -124,7 +179,14 @@ namespace Simbir.GO.Api.Controllers
         [HttpDelete("/api/Admin/Transport/{id}")]
         public async Task<IActionResult> DeleteTransport(long id)
         {
-            await _transportService.DeleteTransportAsync(id);
+            try
+            {
+                await _transportService.DeleteTransportAsync(id);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
 
             return Ok();
         }

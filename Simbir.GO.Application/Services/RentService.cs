@@ -18,6 +18,10 @@ namespace Simbir.GO.Application.Services
             _transportService = transportService;
         }
 
+        /// <summary>
+        /// Создать аренду
+        /// </summary>
+        /// <param name="dto">Сведения о аренде</param>
         public async Task CreateRentAsync(CreateRentDTO dto)
         {
             var rent = new Rent()
@@ -35,6 +39,11 @@ namespace Simbir.GO.Application.Services
             await _context.SaveChangesAsync();
         }
 
+
+        /// <summary>
+        /// Получить историю аренды транспорта
+        /// </summary>
+        /// <param name="transportId">Id транспорта</param>
         public async Task<IReadOnlyCollection<RentDTO>> GetTrasnportRentHistoryAsync(long transportId)
         {
             return await _context.Rents.Where(r => r.TransportId == transportId)
@@ -51,6 +60,11 @@ namespace Simbir.GO.Application.Services
                 }).ToArrayAsync();
         }
 
+
+        /// <summary>
+        /// Получить историю аренды пользователя
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
         public async Task<IReadOnlyCollection<RentDTO>> GetUserRentHistoryAsync(long userId)
         {
             return await _context.Rents.Where(r => r.UserId == userId)
@@ -67,23 +81,37 @@ namespace Simbir.GO.Application.Services
                 }).ToArrayAsync();
         }
 
+
+        /// <summary>
+        /// Является ли арендатором
+        /// </summary>
+        /// <param name="userId">Id пользователя</param>
+        /// <param name="rentId">Id аренды</param>
+        /// <returns></returns>
         public async Task<bool> IsTenantAsync(long userId, long rentId)
         {
             return await _context.Rents.AnyAsync(r => r.Id == rentId && r.User.Id == userId);
         }
 
+
+        /// <summary>
+        /// Начать аренду
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <exception cref="EntityNotFoundException">Транспорт или тип аренды не найден</exception>
         public async Task StartRentAsync(StartRentDTO dto)
         {
-            var transport = _context.Transports.Single(t => t.Id == dto.TransportId);
+            var transport = _context.Transports.SingleOrDefault(t => t.Id == dto.TransportId);
+
+            if (transport is null)
+                throw new EntityNotFoundException(nameof(Transport));
 
             var price = dto.RentType switch
             {
                 RentTypes.Day => transport.DayPrice,
                 RentTypes.Minutes => transport.MinutePrice,
+                _ => throw new EntityNotFoundException(nameof(RentTypes))
             };
-
-            if (!price.HasValue)
-                throw new EntityNotFoundException(nameof(RentTypes));
 
             var rent = new Rent()
             {
@@ -99,6 +127,12 @@ namespace Simbir.GO.Application.Services
             await _context.SaveChangesAsync();
         }
 
+
+        /// <summary>
+        /// Завершить аредну
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <exception cref="EntityNotFoundException">Аренда не найдена</exception>
         public async Task EndRentAsync(EndRentDTO dto)
         {
             var rent = _context.Rents.SingleOrDefault(r => r.Id == dto.RentId);
@@ -120,6 +154,12 @@ namespace Simbir.GO.Application.Services
             });
         }
 
+
+        /// <summary>
+        /// Получить сведения о аренде
+        /// </summary>
+        /// <param name="id">Id аренды</param>
+        /// <exception cref="EntityNotFoundException">Аренда не найдена</exception>
         public async Task<RentDTO> GetRentAsync(long id)
         {
             var rent = await _context.Rents.Include(r => r.RentType)
@@ -140,6 +180,12 @@ namespace Simbir.GO.Application.Services
             };
         }
 
+
+        /// <summary>
+        /// Удалить аренду
+        /// </summary>
+        /// <param name="rentId">Id аренды</param>
+        /// <exception cref="EntityNotFoundException">Аренда не найденв</exception>
         public async Task DeleteRentAsync(long rentId)
         {
             var rent = _context.Rents.SingleOrDefault(r => r.Id == rentId);
@@ -152,7 +198,14 @@ namespace Simbir.GO.Application.Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<long> GetTransportByRentIdAsync(long rentId)
+
+        /// <summary>
+        /// Получить арендованный транспорт
+        /// </summary>
+        /// <param name="rentId">Id аренды</param>
+        /// <returns>id транспорта</returns>
+        /// <exception cref="EntityNotFoundException">Аренда не найдена</exception>
+        public async Task<long> GetRentedTransportAsync(long rentId)
         {
             var transport = await _transportService.GetTransportByIdAsync(rentId);
 
@@ -162,6 +215,12 @@ namespace Simbir.GO.Application.Services
             return transport.Id;
         }
 
+
+        /// <summary>
+        /// Обновить сведения о аренде
+        /// </summary>
+        /// <param name="dto">Данные о аренде</param>
+        /// <exception cref="EntityNotFoundException">Аренда не найдена</exception>
         public async Task UpdateRentAsync(UpdateRentDTO dto)
         {
             var rent = _context.Rents.SingleOrDefault(r => r.Id == dto.RentId);

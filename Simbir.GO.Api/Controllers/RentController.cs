@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Simbir.GO.Api.Helpers;
 using Simbir.GO.Application.Exceptions;
-using Simbir.GO.DataAccess.Data.Entities;
 using Simbir.GO.Domain.Models.Enums;
 using Simbir.GO.Domain.Models.Rent;
 using Simbir.GO.Domain.Services;
@@ -46,7 +45,7 @@ namespace Simbir.GO.Api.Controllers
 
             try
             {
-                var transportId = await _rentService.GetTransportByRentIdAsync(rentId);
+                var transportId = await _rentService.GetRentedTransportAsync(rentId);
 
                 var isOwner = await _transportService.IsTransportOwnerAsync(userId, transportId);
 
@@ -59,7 +58,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
         }
 
@@ -69,9 +68,16 @@ namespace Simbir.GO.Api.Controllers
         {
             var userId = User.GetId();
 
-            var history = await _rentService.GetUserRentHistoryAsync(userId);
+            try
+            {
+                var history = await _rentService.GetUserRentHistoryAsync(userId);
 
-            return Ok(history);
+                return Ok(history);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
 
@@ -85,9 +91,16 @@ namespace Simbir.GO.Api.Controllers
             if (!isOwner)
                 return BadRequest();
 
-            var history = await _rentService.GetTrasnportRentHistoryAsync(transportId);
+            try
+            {
+                var history = await _rentService.GetTrasnportRentHistoryAsync(transportId);
 
-            return Ok(history);
+                return Ok(history);
+            }
+            catch (EntityNotFoundException)
+            {
+                return NotFound();
+            }
         }
 
 
@@ -112,7 +125,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok();
@@ -140,7 +153,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok();
@@ -159,7 +172,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
         }
 
@@ -176,7 +189,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
         }
 
@@ -203,7 +216,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok();
@@ -225,7 +238,7 @@ namespace Simbir.GO.Api.Controllers
             }
             catch (EntityNotFoundException)
             {
-                return BadRequest();
+                return NotFound();
             }
 
             return Ok();

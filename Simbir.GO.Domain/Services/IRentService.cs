@@ -5,7 +5,7 @@ namespace Simbir.GO.Domain.Services
     public interface IRentService
     {
         Task<RentDTO> GetRentAsync(long id);
-        Task<long> GetTransportByRentIdAsync(long rentId);
+        Task<long> GetRentedTransportAsync(long rentId);
         Task<IReadOnlyCollection<RentDTO>> GetUserRentHistoryAsync(long userId);
         Task<IReadOnlyCollection<RentDTO>> GetTrasnportRentHistoryAsync(long transportId);
         Task<bool> IsTenantAsync(long userId, long rentId);

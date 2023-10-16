@@ -2,7 +2,7 @@
 {
     public enum RentTypes
     {
-        Minutes,
+        Minutes = 1,
         Day
     }
 }
